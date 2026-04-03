@@ -468,28 +468,25 @@ const btnAIHelp = document.getElementById('btnAIHelp');
   async function process(){
     const raw0 = inputEl.value, raw = sanitizeBasic(raw0);
     if(!raw){ document.getElementById('render').innerHTML=''; setStatus('',''); return }
-    const forced = forceLatexEl.checked, latexMode = forced || looksLikeLatex(raw);
+    const latexMode = looksLikeLatex(raw);
     try{
       if(latexMode){
         await renderLatexTo('render', raw, true);
-        setStatus('Processed in LaTeX mode', 'ok');
       }else{
         const plain = normalizeToPlain(raw);
         const node = math.parse(plain);
         let latex = node.toTex({ parenthesis:'keep', implicit:'show' });
-        
+
         latex = latex.replace(/C\\_1/g, 'C_{1}');
         latex = latex.replace(/C\\_2/g, 'C_{2}');
         latex = latex.replace(/C\\_3/g, 'C_{3}');
         latex = latex.replace(/C\\_4/g, 'C_{4}');
-        
+
         await renderLatexTo('render', latex, true);
-        setStatus('Processed in Plain → LaTeX mode via mathjs', 'ok');
       }
     }catch(err){
-      document.getElementById('render').innerHTML =
-        `<div class="monospace">Processing error\n${(err?.message||String(err))}\n\nInput\n${raw}</div>`;
-      setStatus('Processing error — check syntax', 'bad');
+      await renderLatexTo('render', raw, true);
+      setStatus('', '');
     }
   }
 
